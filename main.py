@@ -2,11 +2,16 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 
+from recognizer import recognizer
+from pathFinder import path_finder
+
 class ImageViewer:
     def __init__(self, master):
         self.master = master
         self.master.title("Image Viewer")
 
+        self.file_path = ""
+        self.recognized_label = ""
 
         # Создание верхней панели с кнопками
         self.button_panel = tk.Frame(master)
@@ -19,19 +24,19 @@ class ImageViewer:
         self.colour2 = "#495057"
 
         # Кнопка "Загрузить фото"
-        self.load_button = tk.Button(self.button_panel, text="Загрузить фото", command=self.load_image, font=("Arial", 12, "bold"))
+        self.load_button = tk.Button(self.button_panel, text="Load Photo", command=self.uploader, font=("Arial", 12, "bold"))
         self.load_button.pack(side="left", padx=10, pady=5)
         self.load_button.configure(background=self.colour1, foreground=self.colour2, borderwidth=2, padx=15, pady=10)
         self.load_button.bind("<Enter>", lambda event: self.on_enter(event, self.load_button))  # Привязка события наведения мыши
         self.load_button.bind("<Leave>", lambda event: self.on_leave(event, self.load_button))  # Привязка события покидания мыши
 
-        self.button1 = tk.Button(self.button_panel, text="Кнопка 1", command=self.load_image, font=("Arial", 12, "bold"))
+        self.button1 = tk.Button(self.button_panel, text="Recognize", command=self.recognizer_m, font=("Arial", 12, "bold"))
         self.button1.pack(side="left", padx=10, pady=5)
         self.button1.configure(background=self.colour1, foreground=self.colour2, borderwidth=2, padx=15, pady=10)
         self.button1.bind("<Enter>", lambda event: self.on_enter(event, self.button1))  # Привязка события наведения мыши
         self.button1.bind("<Leave>", lambda event: self.on_leave(event, self.button1))
         
-        self.button2 = tk.Button(self.button_panel, text="Кнопка 2", command=self.load_image, font=("Arial", 12, "bold"))
+        self.button2 = tk.Button(self.button_panel, text="Find path", command=self.path_finder_m, font=("Arial", 12, "bold"))
         self.button2.pack(side="left", padx=10, pady=5)
         self.button2.configure(background=self.colour1, foreground=self.colour2, borderwidth=2, padx=15, pady=10)
         self.button2.bind("<Enter>", lambda event: self.on_enter(event, self.button2))  # Привязка события наведения мыши
@@ -56,11 +61,20 @@ class ImageViewer:
         self.offset_x = 0
         self.offset_y = 0
 
-    def load_image(self):
+    def uploader(self):
         file_path = filedialog.askopenfilename(filetypes=[("Изображения", "*.png;*.jpg;*.jpeg")])
+        self.file_path = file_path
         if file_path:
             self.image = Image.open(file_path)
             self.display_image()
+
+    def recognizer_m(self):
+        self.recognized_label = recognizer(self.file_path)
+
+    def path_finder_m(self):
+        image = path_finder(self.recognized_label)
+        self.image = image
+        self.display_image()
 
     def display_image(self):
         if self.image_ref:
