@@ -3,7 +3,7 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 
 from recognizer import recognizer
-from pathFinder import path_finder
+from LogoFinder.pathFinder import path_finder
 
 class ImageViewer:
     def __init__(self, master):
