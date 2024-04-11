@@ -25,6 +25,17 @@ class ImageViewer:
         self.load_button.bind("<Enter>", lambda event: self.on_enter(event, self.load_button))  # Привязка события наведения мыши
         self.load_button.bind("<Leave>", lambda event: self.on_leave(event, self.load_button))  # Привязка события покидания мыши
 
+        self.button1 = tk.Button(self.button_panel, text="Кнопка 1", command=self.load_image, font=("Arial", 12, "bold"))
+        self.button1.pack(side="left", padx=10, pady=5)
+        self.button1.configure(background=self.colour1, foreground=self.colour2, borderwidth=2, padx=15, pady=10)
+        self.button1.bind("<Enter>", lambda event: self.on_enter(event, self.button1))  # Привязка события наведения мыши
+        self.button1.bind("<Leave>", lambda event: self.on_leave(event, self.button1))
+        
+        self.button2 = tk.Button(self.button_panel, text="Кнопка 2", command=self.load_image, font=("Arial", 12, "bold"))
+        self.button2.pack(side="left", padx=10, pady=5)
+        self.button2.configure(background=self.colour1, foreground=self.colour2, borderwidth=2, padx=15, pady=10)
+        self.button2.bind("<Enter>", lambda event: self.on_enter(event, self.button2))  # Привязка события наведения мыши
+        self.button2.bind("<Leave>", lambda event: self.on_leave(event, self.button2))
         
         self.canvas = tk.Canvas(master, bg="white")
         self.canvas.pack(fill=tk.BOTH, expand=True)
