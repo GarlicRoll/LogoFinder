@@ -1,4 +1,5 @@
 from Point import Point
+import math
 class Rectangle:
 
     def __init__(self, center, side_length_meters):
