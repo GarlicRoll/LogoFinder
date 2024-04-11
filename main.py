@@ -1,7 +1,7 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 from PIL import Image, ImageTk
-
+import threading
 from recognizer import recognizer
 from pathFinder import path_finder
 
@@ -40,13 +40,13 @@ class ImageViewer:
         self.button1.configure(background=self.colour1, foreground=self.colour2, borderwidth=0, padx=15, pady=10)
         self.button1.bind("<Enter>", lambda event: self.on_enter(event, self.button1))  # Привязка события наведения мыши
         self.button1.bind("<Leave>", lambda event: self.on_leave(event, self.button1))
-        
+
         self.button2 = tk.Button(self.button_panel, text="Find path", command=self.path_finder_m, font=("Arial", 12, "bold"))
         self.button2.pack(side="left", padx=10, pady=5)
         self.button2.configure(background=self.colour1, foreground=self.colour2, borderwidth=0, padx=15, pady=10)
         self.button2.bind("<Enter>", lambda event: self.on_enter(event, self.button2))  # Привязка события наведения мыши
         self.button2.bind("<Leave>", lambda event: self.on_leave(event, self.button2))
-        
+
         self.canvas = tk.Canvas(master, bg="white")
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.canvas.bind("<Enter>", self.enter_image)
@@ -55,7 +55,6 @@ class ImageViewer:
         self.canvas.bind("<ButtonPress-1>", self.start_move)
         self.canvas.bind("<ButtonRelease-1>", self.stop_move)
         self.canvas.bind("<B1-Motion>", self.move_image)
-
 
         self.image = None
         self.image_ref = None
@@ -66,6 +65,9 @@ class ImageViewer:
         self.offset_x = 0
         self.offset_y = 0
 
+        self.progressbar_recognize = None
+        self.progressbar_find_path = None
+
     def uploader(self):
         file_path = filedialog.askopenfilename(filetypes=[("Изображения", "*.png;*.jpg;*.jpeg")])
         self.file_path = file_path
@@ -74,13 +76,29 @@ class ImageViewer:
             self.display_image()
 
     def recognizer_m(self):
+        self.progressbar_recognize = ttk.Progressbar(self.master, mode="indeterminate")
+        self.progressbar_recognize.pack(side="bottom", fill="x")
+        self.progressbar_recognize.start()
+        threading.Thread(target=self.recognize_task).start()
+
+    def recognize_task(self):
         self.recognized_label = recognizer(self.file_path)
         self.image_label.config(text=self.recognized_label)
+        self.progressbar_recognize.stop()
+        self.progressbar_recognize.destroy()
 
     def path_finder_m(self):
+        self.progressbar_find_path = ttk.Progressbar(self.master, mode="indeterminate")
+        self.progressbar_find_path.pack(side="bottom", fill="x")
+        self.progressbar_find_path.start()
+        threading.Thread(target=self.path_finder_task).start()
+
+    def path_finder_task(self):
         image = path_finder(self.recognized_label)
         self.image = image
         self.display_image()
+        self.progressbar_find_path.stop()
+        self.progressbar_find_path.destroy()
 
     def display_image(self):
         if self.image_ref:
@@ -100,8 +118,6 @@ class ImageViewer:
             resized_image = self.image.resize((new_width, new_height), 3)
             self.image_ref = ImageTk.PhotoImage(resized_image)
             self.canvas.create_image(x, y, anchor=tk.NW, image=self.image_ref)
-
-
 
     def zoom(self, event):
         if self.cursor_on_image and self.image:
@@ -135,7 +151,6 @@ class ImageViewer:
             self.move_start_y = event.y
             self.display_image()
 
-            
     def on_enter(self, event, button):
         button.configure(background=self.highlight_color)  # Изменение цвета кнопки при наведении мыши
 
