@@ -3,7 +3,7 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 
 from recognizer import recognizer
-from LogoFinder.pathFinder import path_finder
+from pathFinder import path_finder
 
 class ImageViewer:
     def __init__(self, master):
@@ -31,19 +31,19 @@ class ImageViewer:
         # Кнопка "Загрузить фото"
         self.load_button = tk.Button(self.button_panel, text="Load Photo", command=self.uploader, font=("Arial", 12, "bold"))
         self.load_button.pack(side="left", padx=10, pady=5)
-        self.load_button.configure(background=self.colour1, foreground=self.colour2, borderwidth=2, padx=15, pady=10)
+        self.load_button.configure(background=self.colour1, foreground=self.colour2, borderwidth=0, padx=15, pady=10)
         self.load_button.bind("<Enter>", lambda event: self.on_enter(event, self.load_button))  # Привязка события наведения мыши
         self.load_button.bind("<Leave>", lambda event: self.on_leave(event, self.load_button))  # Привязка события покидания мыши
 
         self.button1 = tk.Button(self.button_panel, text="Recognize", command=self.recognizer_m, font=("Arial", 12, "bold"))
         self.button1.pack(side="left", padx=10, pady=5)
-        self.button1.configure(background=self.colour1, foreground=self.colour2, borderwidth=2, padx=15, pady=10)
+        self.button1.configure(background=self.colour1, foreground=self.colour2, borderwidth=0, padx=15, pady=10)
         self.button1.bind("<Enter>", lambda event: self.on_enter(event, self.button1))  # Привязка события наведения мыши
         self.button1.bind("<Leave>", lambda event: self.on_leave(event, self.button1))
         
         self.button2 = tk.Button(self.button_panel, text="Find path", command=self.path_finder_m, font=("Arial", 12, "bold"))
         self.button2.pack(side="left", padx=10, pady=5)
-        self.button2.configure(background=self.colour1, foreground=self.colour2, borderwidth=2, padx=15, pady=10)
+        self.button2.configure(background=self.colour1, foreground=self.colour2, borderwidth=0, padx=15, pady=10)
         self.button2.bind("<Enter>", lambda event: self.on_enter(event, self.button2))  # Привязка события наведения мыши
         self.button2.bind("<Leave>", lambda event: self.on_leave(event, self.button2))
         
