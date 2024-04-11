@@ -23,6 +23,11 @@ class ImageViewer:
         self.colour1 = "#faedcd"
         self.colour2 = "#495057"
 
+        # Image label
+        self.image_label = tk.Label(self.button_panel, text="Press 'Recognize'")
+        self.image_label.bind()
+        self.image_label.pack(fill=tk.BOTH, expand=True)
+
         # Кнопка "Загрузить фото"
         self.load_button = tk.Button(self.button_panel, text="Load Photo", command=self.uploader, font=("Arial", 12, "bold"))
         self.load_button.pack(side="left", padx=10, pady=5)
@@ -70,6 +75,7 @@ class ImageViewer:
 
     def recognizer_m(self):
         self.recognized_label = recognizer(self.file_path)
+        self.image_label.config(text=self.recognized_label)
 
     def path_finder_m(self):
         image = path_finder(self.recognized_label)

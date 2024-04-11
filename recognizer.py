@@ -12,7 +12,7 @@ filterwarnings("ignore")
 
 
 def recognizer(path):
-    nn = tf.keras.models.load_model("models/nn128.keras")
+    nn = tf.keras.models.load_model("LogoFinder/models/nn128.keras")
     #nn.load_weights("models/model_fast_food_big.weights.h5")
     '''
     op = cv2.imread(path)
