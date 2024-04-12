@@ -1,7 +1,10 @@
+import os
+import time
 import tkinter as tk
-from tkinter import filedialog, ttk
+from tkinter import filedialog, ttk, scrolledtext
 from PIL import Image, ImageTk
 import threading
+from tkinterhtml import HtmlFrame
 from recognizer import recognizer
 from pathFinder import path_finder
 
@@ -94,8 +97,9 @@ class ImageViewer:
         threading.Thread(target=self.path_finder_task).start()
 
     def path_finder_task(self):
-        image = path_finder(self.recognized_label)
+        image, found_label = path_finder(self.recognized_label)
         self.image = image
+        self.image_label.config(text=found_label)
         self.display_image()
         self.progressbar_find_path.stop()
         self.progressbar_find_path.destroy()
@@ -164,3 +168,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
