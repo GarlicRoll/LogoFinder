@@ -9,9 +9,7 @@ from mapper import mapper
 import networkx as nx
 import osmnx as ox
 import pandas as pd
-from shapely.geometry import Point
 import geopy.distance
-import matplotlib.pyplot as plt
 import io
 from PIL import Image
 
@@ -20,12 +18,10 @@ from selenium import webdriver
 from Point import Point
 from Rectangle import Rectangle
 
-import geopandas as gpd
 
 # Draw the real map
 def drawer_1(point, rectangle):
-    import folium
-    from selenium.webdriver.chrome.options import Options
+
     # Define the coordinates of the location
     latitude = point.latitude
     longitude = point.longitude
