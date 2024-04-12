@@ -2,6 +2,7 @@ import math
 import os
 from random import randint
 
+from mapper import mapper
 import networkx as nx
 import osmnx as ox
 import pandas as pd
@@ -20,7 +21,7 @@ idxs = []
 def path_finder(recognized_label):
     # Создаем пустой граф
     start_point = 99999
-    if not os.path.exists("LogoFinder/datasets/paris.graphml") or True:
+    if not os.path.exists("datasets/paris.graphml") or True:
         print("Creating paris")
         point = Point(48.8566, 2.3522)
         rectangle = Rectangle(point, 1000)
@@ -33,7 +34,7 @@ def path_finder(recognized_label):
         #G = ox.graph_from_point((48.8566, 2.3522), 1000)
         #G = ox.graph_from_place('Paris')
         print("Downloaded paris from osm")
-        data = pd.read_csv('LogoFinder\\datasets\\restraunts.csv')
+        data = pd.read_csv('datasets\\base.csv')
 
         nearest_graph_node = ox.nearest_nodes(G, Y=point.latitude, X=point.longitude)
         # Добавляем узел с координатами и именем
@@ -81,10 +82,12 @@ def path_finder(recognized_label):
         G = ox.load_graphml(filepath='datasets/paris.graphml')
         print("Loaded paris")
 
+    indexes = mapper(recognized_label)
     nearest_mcdonalds_node = None
     nearest_distance = float('inf')
+
     for node in G.nodes(data=True):
-        if 'name' in node[1] and node[1]['name'] == "McDonald's":
+        if 'name' in node[1] and node[1]['name'] in indexes:
             try:
                 distance = nx.shortest_path_length(G, source=start_point, target=node[0], weight='length')
                 if distance < nearest_distance:
@@ -115,8 +118,11 @@ def path_finder(recognized_label):
 
     image = Image.open(buffer)
 
-    if not os.path.exists("LogoFinder/datasets/paris.graphml"):
+    if not os.path.exists("datasets/paris.graphml"):
         #ox.save_graph_geopackage(G, filepath='datasets/paris.graphml')
-        ox.save_graphml(G, filepath='LogoFinder/datasets/paris.graphml')
+        ox.save_graphml(G, filepath='datasets/paris.graphml')
 
     return image
+
+if __name__ == "__main__":
+    path_finder("Cocacolazero")
