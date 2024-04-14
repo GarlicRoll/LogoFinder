@@ -19,9 +19,23 @@ from Point import Point
 from Rectangle import Rectangle
 
 
+def shortest_path_only(G, shortest_path):
+    # Create a new graph to store the cropped graph
+    cropped_graph = nx.MultiDiGraph()
+    cropped_graph.graph['crs'] = 'epsg:4326'
+
+    # Add nodes and edges from the original graph that belong to the shortest path
+
+    cropped_nodes = {node: data for node, data in G.nodes(data=True) if node in shortest_path}
+    cropped_edges = [(u, v, key, data) for u, v, key, data in G.edges(keys=True, data=True) if
+                     u in cropped_nodes and v in cropped_nodes]
+    cropped_graph.add_nodes_from(cropped_nodes.items())
+    cropped_graph.add_edges_from(cropped_edges)
+
+    return cropped_graph
+
 # Draw the real map
 def drawer_1(point, rectangle):
-
     # Define the coordinates of the location
     latitude = point.latitude
     longitude = point.longitude
@@ -37,7 +51,7 @@ def drawer_1(point, rectangle):
     # For example, you can add markers for specific points of interest
     folium.Marker([latitude, longitude], popup='Your Location').add_to(map)
 
-    #folium.Marker([latitude, longitude], popup='Your Location').add_to(map)
+    # folium.Marker([latitude, longitude], popup='Your Location').add_to(map)
     map.save('folium_map.html')
     # Save the map as an HTML file
     options = webdriver.EdgeOptions()
@@ -47,11 +61,28 @@ def drawer_1(point, rectangle):
     driver = webdriver.Edge(options=options)  # Adjust the WebDriver path if needed
     driver.get('file:///' + os.path.abspath('folium_map.html'))
     print("Taking screenshot")
-    #time.sleep(5)  # Adjust the delay as needed to allow the map to load completely
+    # time.sleep(5)  # Adjust the delay as needed to allow the map to load completely
     driver.save_screenshot('folium_map.png')
     driver.quit()
 
     return Image.open('folium_map.png')
+
+
+def crop_graph(G, north, south, east, west):
+    cropped_nodes = {node: data for node, data in G.nodes(data=True) if
+                     north <= data['y'] <= south and east <= data['x'] <= west}
+
+    cropped_edges = [(u, v, key, data) for u, v, key, data in G.edges(keys=True, data=True) if
+                     u in cropped_nodes and v in cropped_nodes]
+
+    # Create a new graph with the cropped nodes and edges
+    cropped_graph = nx.MultiDiGraph()
+    cropped_graph.graph['crs'] = 'epsg:4326'
+    cropped_graph.add_nodes_from(cropped_nodes.items())
+    cropped_graph.add_edges_from(cropped_edges)
+
+    return cropped_graph
+
 
 def drawer(point, shortest_path, G, end_node):
     latitude = point.latitude
@@ -59,9 +90,10 @@ def drawer(point, shortest_path, G, end_node):
     map = folium.Map(location=[latitude, longitude], zoom_start=16)
 
     folium.Marker([latitude, longitude], popup='Your Location', tooltip='Your Location').add_to(map)
+    print(end_node)
     end_point = G.nodes(data=True)[end_node]
     icon = folium.Icon(color="red", icon="fa fa-info")  # Choose an icon (e.g., 'info-sign', 'cloud', 'heart', etc.)
-    folium.Marker([end_point["y"], end_point["x"]],icon=icon, popup='Destination', tooltip='Destination').add_to(map)
+    folium.Marker([end_point["y"], end_point["x"]], icon=icon, popup='Destination', tooltip='Destination').add_to(map)
 
     route_coordinates = [(G.nodes[node]['y'], G.nodes[node]['x']) for node in shortest_path]
     # Add the route to the map as a PolyLine
@@ -84,6 +116,7 @@ def drawer(point, shortest_path, G, end_node):
 
     return Image.open('folium_map.png')
 
+
 # Combine the real map and the path
 def combiner(image1, image2, alpha=128):
     # Resize image2 to match the size of image1 (optional)
@@ -91,7 +124,7 @@ def combiner(image1, image2, alpha=128):
     new_image.paste(image2, (0, 0))
     image2 = new_image
     print(image1.size, image2.size)
-    #image2 = image2.resize(image1.size)
+    # image2 = image2.resize(image1.size)
 
     # Blend the images using alpha compositing
     blended_image = Image.blend(image1.convert('RGBA'), image2.convert('RGBA'), alpha / 255)
@@ -101,42 +134,41 @@ def combiner(image1, image2, alpha=128):
     return blended_image
 
 
-
-
 idxs = []
-def path_finder(recognized_label):
+
+
+def path_finder(recognized_label, G):
     # Label for found logo (it can be one of the shops)
     found_label = "No path found"
     # Создаем пустой граф
     start_point = 99999
 
-    x = randint( 22540, 24390) / 10000
-    y = randint(4882500, 4887200) / 100000
+
+    #x = randint(22740, 24390) / 10000
+    #y = randint(4883500, 4887200) / 100000
+    #x = randint(23512, 23532) / 10000
+    #y = randint(4884660, 4886660) / 100000
+    #print(x, y)
+    x = 2.3522
+    y = 48.8566
     point = Point(y, x)
-    if not os.path.exists("datasets/paris.graphml") or True:
+    rectangle = Rectangle(point, 1000)
+    if G is None:
+    #if not os.path.exists("datasets/paris.graphml"):
         print("Creating paris")
 
-        rectangle = Rectangle(point, 1000)
-
-        G = ox.graph_from_bbox(bbox=(rectangle.upper_left.latitude,
-                               rectangle.bottom_right.latitude,
-                               rectangle.bottom_right.longitude,
-                               rectangle.upper_left.longitude),
-                               network_type="all")
-        #G = ox.graph_from_point((48.8566, 2.3522), 1000)
-        #G = ox.graph_from_place('Paris')
+        G = ox.graph_from_place('Paris', network_type='all')
+        '''G = ox.graph_from_bbox(bbox=(rectangle.upper_left.latitude,
+                                     rectangle.bottom_right.latitude,
+                                     rectangle.bottom_right.longitude,
+                                     rectangle.upper_left.longitude),
+                               network_type="all")'''
+        # G = ox.graph_from_point((48.8566, 2.3522), 1000)
+        # G = ox.graph_from_place('Paris')
         print("Downloaded paris from osm")
+        print(f"Count of nodes {len(G.nodes)}")
+        print(f"Count of edges {len(G.edges)}")
         data = pd.read_csv('datasets\\base.csv')
-
-        nearest_graph_node = ox.nearest_nodes(G, Y=point.latitude, X=point.longitude)
-        # Добавляем узел с координатами и именем
-        G.add_node(start_point, x=point.longitude, y=point.latitude, name="START")
-        # Вычисляем расстояние между новой точкой и ближайшим узлом на графе
-        nearest_node_coords = G.nodes[nearest_graph_node]['y'], G.nodes[nearest_graph_node]['x']
-        distance = geopy.distance.geodesic((point.latitude, point.longitude), nearest_node_coords).meters
-        # Добавляем ребро от ближайшего узла до добавленного узла и задаем атрибут length
-        G.add_edge(nearest_graph_node, start_point, length=distance)
-        G.add_edge(start_point, nearest_graph_node, length=distance)
 
         new_nodes = []
         new_edges = []
@@ -147,15 +179,15 @@ def path_finder(recognized_label):
                 # Находим ближайший узел графа
                 nearest_graph_node = ox.nearest_nodes(G, Y=row['lat'], X=row['lon'])
                 # Добавляем узел с координатами и именем
-                new_nodes.append({"idx" : idx, "x" : row['lon'], "y" : row['lat'], "name" : row['name']})
-                #G.add_node(idx, x=row['lon'], y=row['lat'], name=row['name'])
+                new_nodes.append({"idx": idx, "x": row['lon'], "y": row['lat'], "name": row['name']})
+                # G.add_node(idx, x=row['lon'], y=row['lat'], name=row['name'])
                 # Вычисляем расстояние между новой точкой и ближайшим узлом на графе
                 nearest_node_coords = G.nodes[nearest_graph_node]['y'], G.nodes[nearest_graph_node]['x']
                 distance = geopy.distance.geodesic((row['lat'], row['lon']), nearest_node_coords).meters
                 # Добавляем ребро от ближайшего узла до добавленного узла и задаем атрибут length
-                new_edges.append({"nearest_graph_node" : nearest_graph_node, "idx" : idx, "length" : distance})
-                #G.add_edge(nearest_graph_node, idx, length=distance)
-                #print("Идентификаторы новых узлов:", G.nodes[idx])
+                new_edges.append({"nearest_graph_node": nearest_graph_node, "idx": idx, "length": distance})
+                # G.add_edge(nearest_graph_node, idx, length=distance)
+                # print("Идентификаторы новых узлов:", G.nodes[idx])
         for node in new_nodes:
             G.add_node(node["idx"], x=node["x"], y=node["y"], name=node["name"])
 
@@ -164,16 +196,35 @@ def path_finder(recognized_label):
             G.add_edge(edge["nearest_graph_node"], edge["idx"], length=edge["length"])
             G.add_edge(edge["idx"], edge["nearest_graph_node"], length=edge["length"])
         print(f"Now we have {len(G.edges)} edges")
+
+        ox.save_graphml(G, filepath='datasets/paris.graphml')
         print("Saved places")
     else:
         print("Loading paris")
-        #geopackage_path = "datasets/paris.gpkg"
-        #G = ox.load_graph_geopackage(geopackage_path)
-        #G = gpd.read_file(geopackage_path)
+        # geopackage_path = "datasets/paris.dpkg"
+        # G = ox.load_graph_geopackage(geopackage_path)
+        # G = gpd.read_file(geopackage_path)
 
-
-        G = ox.load_graphml(filepath='datasets/paris.graphml')
+        #G = ox.load_graphml(filepath='datasets/paris.graphml')
         print("Loaded paris")
+
+
+    nearest_graph_node = ox.nearest_nodes(G, Y=point.latitude, X=point.longitude)
+    # Добавляем узел с координатами и именем
+    G.add_node(start_point, x=point.longitude, y=point.latitude, name="START")
+    # Вычисляем расстояние между новой точкой и ближайшим узлом на графе
+    nearest_node_coords = G.nodes[nearest_graph_node]['y'], G.nodes[nearest_graph_node]['x']
+    distance = geopy.distance.geodesic((point.latitude, point.longitude), nearest_node_coords).meters
+    # Добавляем ребро от ближайшего узла до добавленного узла и задаем атрибут length
+    G.add_edge(nearest_graph_node, start_point, length=distance)
+    G.add_edge(start_point, nearest_graph_node, length=distance)
+
+    print(f"Count of nodes {len(G.nodes)}")
+    print(f"Count of edges {len(G.edges)}")
+    G = crop_graph(G, rectangle.upper_left.latitude,
+                   rectangle.bottom_right.latitude,
+                   rectangle.bottom_right.longitude,
+                   rectangle.upper_left.longitude)
 
     indexes = mapper(recognized_label)
     nearest_mcdonalds_node = None
@@ -194,9 +245,18 @@ def path_finder(recognized_label):
 
     image = Image.open('no_path.png')
     # Plot the route
+    print(f"Count of nodes {len(G.nodes)}")
+    print(f"Count of edges {len(G.edges)}")
+
+
+
     try:
         shortest_path = nx.shortest_path(G, target=start_point, source=nearest_mcdonalds_node, weight='length')
-        fig, ax = ox.plot_graph_route(G, shortest_path, route_linewidth=5, route_color='r', show=False)
+        #fig, ax = ox.plot_graph_route(G, shortest_path, route_linewidth=5, route_color='r', show=False)
+        G = shortest_path_only(G, shortest_path)
+        print(f"Count of nodes {len(G.nodes)}")
+        print(f"Count of edges {len(G.edges)}")
+
         print("Plotting paris")
         node_color = []
         for n in G.nodes():
@@ -204,28 +264,25 @@ def path_finder(recognized_label):
                 node_color.append("#12ed65")
             else:
                 node_color.append("none")
-        #fig, ax = ox.plot_graph(G, node_color=node_color, node_size=10, show=False, close=False)
+        # fig, ax = ox.plot_graph(G, node_color=node_color, node_size=10, show=False, close=False)
 
-        fig.savefig("graph_route.png")
-        buffer = io.BytesIO()
-        fig.savefig(buffer, format='png')
-        buffer.seek(0)
-        #image = Image.open(buffer)
-        image = drawer(point, shortest_path, G, end_node)
+        #fig.savefig("graph_route.png")
+        #buffer = io.BytesIO()
+        #fig.savefig(buffer, format='png')
+        #buffer.seek(0)
+        # image = Image.open(buffer)
+        image = drawer(point, shortest_path, G, nearest_mcdonalds_node)
     except nx.exception.NetworkXNoPath:
-        print("No path found")
+        print("No path found (networkxnopath)")
     except KeyError:
-        print("No path found")
-
-
-
-    if not os.path.exists("datasets/paris.graphml"):
-        #ox.save_graph_geopackage(G, filepath='datasets/paris.graphml')
-        ox.save_graphml(G, filepath='datasets/paris.graphml')
-
-    #image = combiner(image, real_map)
+        print("No path found (keyerror)")
+    # image = combiner(image, real_map)
 
     return image, found_label
 
+
 if __name__ == "__main__":
-    image, label = path_finder("Cocacolazero")
+    G = None
+    if os.path.exists("datasets/paris.graphml"):
+        G = ox.load_graphml(filepath='datasets/paris.graphml')
+    image, label = path_finder("Cocacolazero", G)

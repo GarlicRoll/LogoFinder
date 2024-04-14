@@ -1,10 +1,9 @@
 import os
-import time
+import osmnx as ox
 import tkinter as tk
 from tkinter import filedialog, ttk, scrolledtext
 from PIL import Image, ImageTk
 import threading
-from tkinterhtml import HtmlFrame
 from recognizer import recognizer
 from pathFinder import path_finder
 
@@ -97,7 +96,10 @@ class ImageViewer:
         threading.Thread(target=self.path_finder_task).start()
 
     def path_finder_task(self):
-        image, found_label = path_finder(self.recognized_label)
+        if G is None:
+            image, found_label = path_finder(self.recognized_label, G)
+        else:
+            image, found_label = path_finder(self.recognized_label, G.copy())
         self.image = image
         self.image_label.config(text=found_label)
         self.display_image()
@@ -161,8 +163,13 @@ class ImageViewer:
     def on_leave(self, event, button):
         button.configure(background=self.colour1)  # Возвращение исходного цвета кнопки после покидания мыши
 
+
+G = None
 def main():
+    global G
     root = tk.Tk()
+    if os.path.exists("datasets/paris.graphml"):
+        G = ox.load_graphml(filepath='datasets/paris.graphml')
     app = ImageViewer(root)
     root.mainloop()
 
