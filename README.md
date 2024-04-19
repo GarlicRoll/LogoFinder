@@ -71,3 +71,11 @@ def main():
 if __name__ == "__main__":
     main()
 ````
+![PROJECT-1](https://github.com/GarlicRoll/LogoFinder/assets/75137969/93cc9e45-2f48-4dba-b80d-30c72d145165)
+![PROJECT-2](https://github.com/GarlicRoll/LogoFinder/assets/75137969/3168ce73-fdfe-4a28-b515-8ef25bebe827)
+![PROJECT-3](https://github.com/GarlicRoll/LogoFinder/assets/75137969/07d53a71-1f99-47c6-b2d0-f76d72978a95)
+![PROJECT-4](https://github.com/GarlicRoll/LogoFinder/assets/75137969/cd736dd1-8550-44ac-a91f-eda6fe5ebb6a)
+![PROJECT-5](https://github.com/GarlicRoll/LogoFinder/assets/75137969/e898f7fb-a3df-496b-b233-e97f57204dfd)
+![PROJECT-6](https://github.com/GarlicRoll/LogoFinder/assets/75137969/8c99a8b7-bd06-47c8-af85-2aeaf90436dd)
+![PROJECT-7](https://github.com/GarlicRoll/LogoFinder/assets/75137969/a1881173-49b9-48b3-bd41-c01724c41670)
+![PROJECT-8](https://github.com/GarlicRoll/LogoFinder/assets/75137969/6d2f4d87-baa7-4a6b-9dab-120bc430027d)
